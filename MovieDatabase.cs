@@ -15,6 +15,7 @@ public class MovieDatabase(SqliteConnection connection)
             CREATE TABLE IF NOT EXISTS movies (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title TEXT NOT NULL,
+            image_path TEXT NOT NULL,
             path TEXT NOT NULL
             );
         ";
@@ -33,15 +34,16 @@ public class MovieDatabase(SqliteConnection connection)
         return count > 0;
     }
 
-    public void InsertMovie(string title, string path)
+    public void InsertMovie(string title, string imagePath, string path)
     {
         using var insertCommand = _connection.CreateCommand();
         insertCommand.CommandText = @"
-            INSERT INTO movies (title, path)
-            VALUES ($title, $path);
+            INSERT INTO movies (title, image_path, path)
+            VALUES ($title, $imagePath, $path);
         ";
         insertCommand.Parameters.AddWithValue("$title", title);
         insertCommand.Parameters.AddWithValue("$path", path);
+        insertCommand.Parameters.AddWithValue("$imagePath", imagePath);
 
         insertCommand.ExecuteNonQuery();
     }
@@ -51,7 +53,7 @@ public class MovieDatabase(SqliteConnection connection)
         var movies = new List<Movie>();
 
         using var selectCommand = _connection.CreateCommand();
-        selectCommand.CommandText = "SELECT id, title, path FROM movies;";
+        selectCommand.CommandText = "SELECT id, title, image_path, path FROM movies;";
 
         using var reader = selectCommand.ExecuteReader();
 
@@ -61,7 +63,8 @@ public class MovieDatabase(SqliteConnection connection)
             {
                 Id = reader.GetInt32(0),
                 Title = reader.GetString(1),
-                Path = reader.GetString(2)
+                ImagePath = reader.GetString(2),
+                Path = reader.GetString(3)
             };
 
             movies.Add(movie);

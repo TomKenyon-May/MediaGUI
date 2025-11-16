@@ -14,7 +14,8 @@ public class SeriesDatabase(SqliteConnection connection)
         createCommand.CommandText = @"
             CREATE TABLE IF NOT EXISTS series (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE
+            name TEXT NOT NULL UNIQUE,
+            image_path TEXT NOT NULL UNIQUE
             );
 
             CREATE TABLE IF NOT EXISTS seasons (
@@ -31,6 +32,7 @@ public class SeriesDatabase(SqliteConnection connection)
             season_id INTEGER NOT NULL,
             season_number INTEGER NOT NULL,
             episode_number INTEGER NOT NULL,
+            current INTEGER NOT NULL DEFAULT 0,
             title TEXT NOT NULL,
             path TEXT NOT NULL UNIQUE,
             FOREIGN KEY(series_id) REFERENCES series(id),
@@ -41,7 +43,7 @@ public class SeriesDatabase(SqliteConnection connection)
         createCommand.ExecuteNonQuery();
     }
 
-    public Series CreateOrGetSeries(string name)
+    public Series CreateOrGetSeries(string name, string imagePath)
     {
         using (var command = _connection.CreateCommand())
         {
@@ -54,21 +56,23 @@ public class SeriesDatabase(SqliteConnection connection)
                 return new Series
                 {
                     Id = reader.GetInt32(0),
-                    Name = reader.GetString(1)
+                    Name = reader.GetString(1),
+                    ImagePath = reader.GetString(2)
                 };
             }
         }
 
         using (var command = _connection.CreateCommand())
         {
-            command.CommandText = "INSERT INTO series (name) VALUES ($name);";
+            command.CommandText = "INSERT INTO series (name, image_path) VALUES ($name, $imagePath);";
             command.Parameters.AddWithValue("$name", name);
+            command.Parameters.AddWithValue("$imagePath", imagePath);
             command.ExecuteNonQuery();
         }
 
         using (var command = _connection.CreateCommand())
         {
-            command.CommandText = "SELECT id, name FROM series WHERE name = $name;";
+            command.CommandText = "SELECT id, name, image_path FROM series WHERE name = $name;";
             command.Parameters.AddWithValue("$name", name);
             using var reader = command.ExecuteReader();
 
@@ -77,7 +81,8 @@ public class SeriesDatabase(SqliteConnection connection)
             return new Series
             {
                 Id = reader.GetInt32(0),
-                Name = reader.GetString(1)
+                Name = reader.GetString(1),
+                ImagePath = reader.GetString(2)
             };
         }
     }

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.IO;
+using System.Xml.Schema;
 
 namespace MediaLibraryApp;
 
 public static class LibraryScanner
 {
-    private static readonly string[] SupportedExtensions =
+    private static readonly string[] VideoExtensions =
     {
         ".mkv",
         ".mp4",
@@ -13,12 +14,30 @@ public static class LibraryScanner
         ".mov"
     };
 
+    private static readonly string[] ImageExtensions =
+    {
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".webp",
+        ".bmp",
+        ".gif",
+        ".tiff",
+        ".tif"
+    };
+
     private static bool IsVideo(string filePath)
     {
         var extension = Path.GetExtension(filePath);
-        return Array.Exists(SupportedExtensions, e => string.Equals(e, extension, StringComparison.OrdinalIgnoreCase));
+        return Array.Exists(VideoExtensions, e => string.Equals(e, extension, StringComparison.OrdinalIgnoreCase));
     }
 
+    private static bool IsImage(string imagePath)
+    {
+        var extension = Path.GetExtension(imagePath);
+        return Array.Exists(ImageExtensions, e => string.Equals(e, extension, StringComparison.OrdinalIgnoreCase));
+    }
+    
     public static void ReadMoviesFolder(MovieDatabase movieDb, string movieFolder)
     {
         // check the file location
@@ -32,22 +51,31 @@ public static class LibraryScanner
 
         foreach (var dir in movieDirs)
         {
+            string title = string.Empty;
+            string imagePath = string.Empty;
+            var fullPath = string.Empty;
+
             var files = Directory.GetFiles(dir);
 
             foreach (var file in files)
-            {
+            {   
+                if (IsImage(file))
+                {
+                    imagePath = Path.GetFullPath(file);
+                }
+
                 if (!IsVideo(file))
                     continue;
-                
-                var title = Path.GetFileNameWithoutExtension(file);
-                var fullPath = Path.GetFullPath(file);
+                 
+                title = Path.GetFileNameWithoutExtension(file);
+                fullPath = Path.GetFullPath(file);
+            }
 
-                if (!movieDb.MovieExists(fullPath))
+            if (!movieDb.MovieExists(fullPath))
                 {
-                    movieDb.InsertMovie(title, fullPath);
+                    movieDb.InsertMovie(title, imagePath, fullPath);
                     Console.WriteLine($"Movie added: {title}");
                 }
-            }
         }
     }
 
@@ -62,7 +90,15 @@ public static class LibraryScanner
         foreach (var seriesDir in Directory.GetDirectories(seriesFolder))
         {
             var seriesName = Path.GetFileName(seriesDir);
-            var series = seriesDb.CreateOrGetSeries(seriesName);
+            string imagePath = string.Empty;
+            foreach (var file in Directory.GetFiles(seriesDir))
+            {
+                if (IsImage(file))
+                {
+                    imagePath = Path.GetFullPath(file);
+                }
+            }
+            var series = seriesDb.CreateOrGetSeries(seriesName, imagePath);
 
             foreach (var seasonDir in Directory.GetDirectories(seriesDir))
             {
