@@ -2,7 +2,7 @@
 using System.IO;
 using System.Xml.Schema;
 
-namespace MediaLibraryApp;
+namespace MediaCore;
 
 public static class LibraryScanner
 {

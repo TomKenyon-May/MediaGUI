@@ -2,7 +2,7 @@
 using Microsoft.Data.Sqlite;
 using System.Collections.Generic;
 
-namespace MediaLibraryApp;
+namespace MediaCore;
 
 public class MovieDatabase(SqliteConnection connection)
 {

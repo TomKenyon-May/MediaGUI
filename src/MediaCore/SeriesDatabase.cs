@@ -2,7 +2,7 @@
 using Microsoft.Data.Sqlite;
 using System.Collections.Generic;
 
-namespace MediaLibraryApp;
+namespace MediaCore;
 
 public class SeriesDatabase(SqliteConnection connection)
 {
@@ -47,7 +47,7 @@ public class SeriesDatabase(SqliteConnection connection)
     {
         using (var command = _connection.CreateCommand())
         {
-            command.CommandText = "SELECT id, name FROM series WHERE name = $name;";
+            command.CommandText = "SELECT id, name, image_path FROM series WHERE name = $name;";
             command.Parameters.AddWithValue("$name", name);
 
             using var reader = command.ExecuteReader();

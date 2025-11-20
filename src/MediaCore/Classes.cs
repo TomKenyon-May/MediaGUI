@@ -1,4 +1,4 @@
-﻿namespace MediaLibraryApp;
+﻿namespace MediaCore;
 
 public class Movie
 {

@@ -1,7 +1,8 @@
 ﻿using System;
 using Microsoft.Data.Sqlite;
+using MediaCore;
 
-namespace MediaLibraryApp;
+namespace CLIApp;
 
 class Program
 {
